@@ -1,0 +1,4 @@
+intensity,RMSE_XGBoost,RMSE_Hybrid,n_samples
+Light (0-2mm),1.298829,1.816267,512415
+Moderate (2-10mm),3.205139,4.472087,161361
+Heavy (>10mm),9.549425,8.098767,48582

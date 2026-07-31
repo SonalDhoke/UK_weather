@@ -22,7 +22,7 @@ st.markdown(
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("Dataset/test_predictions.csv", parse_dates=["date"])
+    df = pd.read_csv("Dataset/test_predictions_dummy.csv", parse_dates=["date"])
     return df
 
 df = load_data()

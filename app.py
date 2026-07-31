@@ -86,19 +86,19 @@ div[data-testid="stMetric"] {
 # ---------------------------------------------------------------------------
 @st.cache_data
 def load_predictions():
-    return pd.read_csv("Dataset/test_predictions.csv", parse_dates=["date"])
+    return pd.read_csv("Dataset/test_predictions_dummy.csv", parse_dates=["date"])
 
 @st.cache_data
 def load_model_comparison():
-    return pd.read_csv("Dataset/model_comparison_results.csv")
+    return pd.read_csv("Dataset/model_comparison_results_dummy.csv")
 
 @st.cache_data
 def load_seasonal():
-    return pd.read_csv("Dataset/seasonal_rmse.csv")
+    return pd.read_csv("Dataset/seasonal_rmse_dummy.csv")
 
 @st.cache_data
 def load_intensity():
-    return pd.read_csv("Dataset/intensity_rmse.csv")
+    return pd.read_csv("Dataset/intensity_rmse_dummy.csv")
 
 # ---------------------------------------------------------------------------
 # SIDEBAR NAVIGATION (radio button logic)

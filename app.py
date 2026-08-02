@@ -90,15 +90,15 @@ def load_predictions():
 
 @st.cache_data
 def load_model_comparison():
-    return pd.read_csv("Dataset/model_comparison_results_dummy.csv")
+    return pd.read_csv("Dataset/model_comparison_results.csv")
 
 @st.cache_data
 def load_seasonal():
-    return pd.read_csv("Dataset/seasonal_rmse_dummy.csv")
+    return pd.read_csv("Dataset/seasonal_rmse.csv")
 
 @st.cache_data
 def load_intensity():
-    return pd.read_csv("Dataset/intensity_rmse_dummy.csv")
+    return pd.read_csv("Dataset/intensity_rmse.csv")
 
 # ---------------------------------------------------------------------------
 # SIDEBAR NAVIGATION (radio button logic)

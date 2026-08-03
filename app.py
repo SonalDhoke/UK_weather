@@ -86,7 +86,7 @@ div[data-testid="stMetric"] {
 # ---------------------------------------------------------------------------
 @st.cache_data
 def load_predictions():
-    return pd.read_csv("Dataset/test_predictions_dummy.csv", parse_dates=["date"])
+    return pd.read_csv("Dataset/test_predictions.csv", parse_dates=["date"])
 
 @st.cache_data
 def load_model_comparison():

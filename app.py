@@ -32,7 +32,6 @@ section[data-testid="stSidebar"] {
     font-size: 30px;
 }
 
-/* Radio group acts as nav list */
 section[data-testid="stSidebar"] div[role="radiogroup"] {
     gap: 4px;
 }
@@ -51,13 +50,11 @@ section[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
     background-color: #EEF2F8;
     cursor: pointer;
 }
-/* Active/selected radio row */
 section[data-testid="stSidebar"] div[role="radiogroup"] > label[data-checked="true"] {
     background-color: #E7F0FF !important;
     color: #1A56DB !important;
     font-weight: 700 !important;
 }
-/* Hide the actual radio circle */
 section[data-testid="stSidebar"] div[role="radiogroup"] input[type="radio"] {
     display: none;
 }
@@ -71,7 +68,6 @@ section[data-testid="stSidebar"] div[role="radiogroup"] input[type="radio"] {
     line-height: 1.5;
 }
 
-/* KPI card style tweaks */
 div[data-testid="stMetric"] {
     background-color: #FFFFFF;
     border: 1px solid #E5E9F0;
@@ -86,7 +82,17 @@ div[data-testid="stMetric"] {
 # ---------------------------------------------------------------------------
 @st.cache_data
 def load_predictions():
-    return pd.read_csv("Dataset/test_predictions.csv", parse_dates=["date"])
+    df = pd.read_csv("Dataset/test_predictions.csv", parse_dates=["date"])
+
+    # --- Build a human-readable region label instead of raw lat_long station_id ---
+    if "station_name" in df.columns:
+        # Combine name + id to guarantee uniqueness (some names repeat across stations)
+        df["region_label"] = df["station_name"].astype(str) + " (" + df["region"].astype(str) + ")"
+    else:
+        # Fallback if station_name isn't in the CSV yet — still avoids crashing
+        df["region_label"] = df["region"].astype(str)
+
+    return df
 
 @st.cache_data
 def load_model_comparison():
@@ -154,7 +160,7 @@ def render_dashboard():
     col1, col2, col3 = st.columns(3)
     col1.metric("Total records", f"{len(df):,}")
     col2.metric("Date range", f"{df['date'].min().date()} to {df['date'].max().date()}")
-    col3.metric("Regions covered", df["region"].nunique())
+    col3.metric("Regions covered", df["region_label"].nunique())
 
     st.subheader("Preview of predictions data")
     st.dataframe(df.head(20), use_container_width=True)
@@ -231,36 +237,42 @@ def render_regional_breakdown():
     st.title("Regional Breakdown")
 
     df = load_predictions()
-    regions = st.multiselect(
-        "Select region(s)", df["region"].unique(),
-        default=list(df["region"].unique())
-    )
-    filtered = df[df["region"].isin(regions)]
 
-    grouped = filtered.groupby("region").agg(
+    # --- Use readable region_label in the multiselect instead of raw coordinates ---
+    all_labels = sorted(df["region_label"].unique())
+    selected_labels = st.multiselect(
+        "Select region(s)",
+        options=all_labels,
+        default=all_labels[:10]  # default to first 10 to avoid an overwhelming initial view
+    )
+
+    filtered = df[df["region_label"].isin(selected_labels)]
+
+    grouped = filtered.groupby("region_label").agg(
         mean_precip_true=("precip_true", "mean"),
         mean_precip_pred_xgb=("pred_precip_xgb", "mean"),
         mean_precip_pred_hybrid=("pred_precip_hybrid", "mean"),
-        n_records=("region", "count")
+        n_records=("region_label", "count")
     ).reset_index()
 
     st.dataframe(grouped, use_container_width=True)
 
     fig = px.bar(
         grouped.melt(
-            id_vars="region",
+            id_vars="region_label",
             value_vars=["mean_precip_true", "mean_precip_pred_xgb", "mean_precip_pred_hybrid"],
             var_name="Series", value_name="Precipitation (mm)"
         ),
-        x="region", y="Precipitation (mm)", color="Series", barmode="group",
+        x="region_label", y="Precipitation (mm)", color="Series", barmode="group",
         title="Average Precipitation: Actual vs Predicted by Region"
     )
+    fig.update_layout(xaxis_title="Region")
     st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Time series for selected region(s)")
-    if regions:
-        region_choice = st.selectbox("Zoom into one region", regions)
-        ts = filtered[filtered["region"] == region_choice].sort_values("date")
+    if selected_labels:
+        region_choice = st.selectbox("Zoom into one region", selected_labels)
+        ts = filtered[filtered["region_label"] == region_choice].sort_values("date")
 
         fig2 = px.line(
             ts, x="date", y=["precip_true", "pred_precip_xgb", "pred_precip_hybrid"],
@@ -289,7 +301,8 @@ def render_extreme_events():
     extreme_df = df[df["is_extreme_actual"] == 1]
     st.subheader("Actual extreme rainfall events")
     st.dataframe(
-        extreme_df[["date", "region", "precip_true", "pred_precip_xgb", "pred_precip_hybrid"]],
+        # --- region_label replaces raw region/station_id in the display table ---
+        extreme_df[["date", "region_label", "precip_true", "pred_precip_xgb", "pred_precip_hybrid"]],
         use_container_width=True
     )
 

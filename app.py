@@ -84,13 +84,11 @@ div[data-testid="stMetric"] {
 def load_predictions():
     df = pd.read_csv("Dataset/test_predictions.csv", parse_dates=["date"])
 
-    # --- Build a human-readable region label instead of raw lat_long station_id ---
-    if "station_name" in df.columns:
-        # Combine name + id to guarantee uniqueness (some names repeat across stations)
-        df["region_label"] = df["station_name"].astype(str) + " (" + df["region"].astype(str) + ")"
-    else:
-        # Fallback if station_name isn't in the CSV yet — still avoids crashing
-        df["region_label"] = df["region"].astype(str)
+    # Build a human-readable region label from station_name + station_id
+    df["region_label"] = df["station_name"].astype(str) + " (" + df["station_id"].astype(str) + ")"
+
+    # Keep a "region" alias so the rest of the app's existing code still works
+    df["region"] = df["station_id"]
 
     return df
 

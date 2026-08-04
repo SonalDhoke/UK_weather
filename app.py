@@ -87,17 +87,10 @@ def load_predictions():
     # Build a human-readable region label from station_name.
     # Only append coordinates when a station name is NOT unique (avoids the
     # "(51.503_-3.198)" suffix showing up on every single row).
-    name_counts = df["station_name"].value_counts()
-
-    df["region_label"] = df.apply(
-        lambda row: row["station_name"]
-        if name_counts[row["station_name"]] == 1
-        else f"{row['station_name']} ({row['station_id']})",
-        axis=1
-    )
+   
 
     # Keep a "region" alias so the rest of the app's existing code still works
-    df["region"] = df["station_id"]
+    df["region"] = df["station_name"]
 
     return df
 

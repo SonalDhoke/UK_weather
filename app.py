@@ -90,7 +90,7 @@ def load_predictions():
    
 
     # Keep a "region" alias so the rest of the app's existing code still works
-    df["region"] = df["station_name"]
+    df["region_label"] = df["station_name"]
 
     return df
 
